@@ -5,12 +5,12 @@
 #include <iomanip>
 #include <algorithm>
 #include <numeric>
-#include <unordered_map>
 #include <mutex>
+#include <atomic>
+#include <chrono>
 #include <omp.h>
 
 using namespace std;
-
 
 double target_ratio;
 int stages, min_teeth, max_teeth;
@@ -21,8 +21,8 @@ double best_error = numeric_limits<double>::max();
 int best_teeth = numeric_limits<int>::max();
 mutex best_mutex;
 
-unordered_map<int, vector<int>> factor_cache;
-mutex cache_mutex;
+atomic<int> progress_counter(0);
+int total_iterations = 0;
 
 bool factor(int n, int depth, vector<int>& result, int stages) {
     if (depth == stages) return n == 1;
@@ -51,36 +51,45 @@ bool factor(int n, int depth, vector<int>& result, int stages) {
     return false;
 }
 
-
-
 void search() {
     int min_a = pow(min_teeth, stages);
     int max_a = pow(max_teeth, stages);
+    total_iterations = max_a - min_a + 1;
 
     #pragma omp parallel for schedule(dynamic)
     for (int a = min_a; a <= max_a; ++a) {
-        int b = round(a * target_ratio);
-        double ratio = static_cast<double>(b) / a;
-        double error = abs(ratio - target_ratio);
-        if (error > max_error) continue;
+        int local_progress = ++progress_counter;
+        if (local_progress % 1000 == 0 || local_progress == total_iterations) {
+            #pragma omp critical
+            {
+                cout << "\rProgress: " << fixed << setprecision(2)
+                     << (100.0 * local_progress / total_iterations)
+                     << "% (" << local_progress << "/" << total_iterations << ")" << flush;
+            }
+        }
 
+        for (int b = floor(a * target_ratio - 1); b <= ceil(a * target_ratio + 1); ++b) {
+            double ratio = static_cast<double>(b) / a;
+            double error = abs(ratio - target_ratio);
+            if (error > max_error) continue;
 
-        vector<int> a_factors, b_factors;
-        if (factor(a, 0, a_factors, stages) && factor(b, 0, b_factors, stages)) {
-            int total_teeth = accumulate(a_factors.begin(), a_factors.end(), 0) +
-                                accumulate(b_factors.begin(), b_factors.end(), 0);
+            vector<int> a_factors, b_factors;
+            if (factor(a, 0, a_factors, stages) && factor(b, 0, b_factors, stages)) {
+                int total_teeth = accumulate(a_factors.begin(), a_factors.end(), 0) +
+                                  accumulate(b_factors.begin(), b_factors.end(), 0);
 
-            lock_guard<mutex> lock(best_mutex);
-            if (error < best_error || (abs(error - best_error) < 1e-12 && total_teeth < best_teeth)) {
-                best_error = error;
-                best_teeth = total_teeth;
-                best_a_factors = a_factors;
-                best_b_factors = b_factors;
+                lock_guard<mutex> lock(best_mutex);
+                if (error < best_error || (abs(error - best_error) < 1e-9 && total_teeth < best_teeth)) {
+                    best_error = error;
+                    best_teeth = total_teeth;
+                    best_a_factors = a_factors;
+                    best_b_factors = b_factors;
+                }
             }
         }
     }
+    cout << "\rProgress: 100.00% (" << total_iterations << "/" << total_iterations << ")" << endl;
 }
-
 
 int main() {
     cout << "Enter desired gear ratio (e.g., 75): ";
@@ -94,12 +103,11 @@ int main() {
     cout << "Enter maximum allowed error (e.g., 0.0001): ";
     cin >> max_error;
 
-
     auto start = chrono::high_resolution_clock::now();
     search();
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end - start;
-    cout << "\nSearch completed in " << elapsed.count() << " seconds.\n";
+    cout << "\nSearch completed in " << fixed << setprecision(3) << elapsed.count() << " seconds.\n";
 
     if (!best_a_factors.empty()) {
         cout << "\nBest approximation:\nCompound Result\n";
