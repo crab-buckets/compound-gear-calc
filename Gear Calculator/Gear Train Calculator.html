@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!-- saved from url=(0101)https://web.archive.org/web/20190406140243/http://www.scientific601.altervista.org/gear/gearcalc.html -->
+<html><!-- Copyright (C) 2015 S.K. Consultants - All Rights Reserved --><!-- Apr 18/2015 --><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./Gear Train Calculator_files/analytics.js.download" type="text/javascript"></script>
+<script type="text/javascript">window.addEventListener('DOMContentLoaded',function(){var v=archive_analytics.values;v.service='wb';v.server_name='wwwb-app203.us.archive.org';v.server_ms=228;archive_analytics.send_pageview({});});</script><script type="text/javascript" src="./Gear Train Calculator_files/playback.bundle.js.download" charset="utf-8"></script><style>@media print {#ghostery-tracker-tally {display:none !important}}</style>
+<script type="text/javascript" src="./Gear Train Calculator_files/wombat.js.download" charset="utf-8"></script>
+<script type="text/javascript">
+  __wm.init("https://web.archive.org/web");
+  __wm.wombat("http://www.scientific601.altervista.org:80/gear/gearcalc.html","20190406140243","https://web.archive.org/","web","/_static/",
+	      "1554559363");
+</script>
+<link rel="stylesheet" type="text/css" href="./Gear Train Calculator_files/banner-styles.css">
+<link rel="stylesheet" type="text/css" href="./Gear Train Calculator_files/iconochive.css">
+<!-- End Wayback Rewrite JS Include -->
+
+<meta name="keywords" content="gear, train, calculator, compound, reverted, teeth, ratio, spur, solar, sidereal, synodic, orrery">
+<meta name="description" content="Compound Gear Train Calculator. Finds number of teeth needed on gears for any ratio.">
+<meta name="viewport" content="width=device-width">
+<title>Gear Train Calculator</title>
+<style type="text/css" id="tts-styles">[data-tts-block-id].tts-active {background: rgba(206, 225, 255, 0.9) !important;} [data-tts-sentence-id].tts-active {background: rgba(0, 89, 191, 0.7) !important;}</style></head>
+<body style="font-family:arial" data-new-gr-c-s-check-loaded="14.994.0" data-gr-ext-installed=""><!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<style type="text/css">
+body {
+  margin-top:0 !important;
+  padding-top:0 !important;
+  /*min-width:800px !important;*/
+}
+</style>
+<script>__wm.rw(0);</script>
+<div id="wm-ipp-base" lang="en" style="display: block; direction: ltr;">
+</div><div id="donato" style="position:relative;width:100%;">
+  <div id="donato-base">
+    <iframe id="donato-if" src="./Gear Train Calculator_files/donate.html" scrolling="no" frameborder="0" style="width:100%; height:100%">
+    </iframe>
+  </div>
+</div><script type="text/javascript">
+__wm.bt(650,27,25,2,"web","http://www.scientific601.altervista.org/gear/gearcalc.html","20190406140243",1996,"/_static/",["/_static/css/banner-styles.css?v=bsmaklHF","/_static/css/iconochive.css?v=qtvMKcIJ"]);
+  __wm.rw(1);
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+<form action="https://web.archive.org/web/20190406140243/http://www.scientific601.altervista.org/gear/gearcalc.html">
+ <table border="1" bordercolor="#a0a0a0" cellpadding="8" cellspacing="0">
+  <tbody><tr><td style="background-color:#e0e0ff" id="backg"><center><b><span id="title">Compound</span> Gear Train Calculator</b><br>
+   <noscript style="color:#ff0000; font-weight:bold">JavaScript must be enabled.</noscript><br>
+<fieldset id="field" style="padding:0em 0em;text-align:left">
+   <center>Ratio:
+   <input id="ratio" value="3.141592653589793" style="font-family:monospace;font-size:16px;width:12em"></center>
+   &nbsp;Stages:<select id="stages" style="font-size:16px" onchange="typ()">
+	<option value="0">R</option>
+    <option>1</option>
+    <option selected="">2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6</option>
+    </select><span id="rat">&nbsp; Ratchet:<input type="checkbox" id="pawl" onchange="ta()" style="font-size:16px;outline: 1px solid #a0a0a0;background-color:#ffffff" title="1st stage is pawl &amp; ratchet"></span>
+     &nbsp;<span id="adddiv" style="visibility:hidden">Tally:<input type="checkbox" id="tally" onchange="srt()" style="font-size:16px;outline: 1px solid #a0a0a0;background-color:#ffffff" checked="" title="ratchet&#39;s teeth are added"></span>
+  <table border="0" width="100%" cellpadding="0" cellspacing="0">
+  <tbody><tr>
+   <td style="text-align:right">Minimum:</td>
+   <td><input id="minw" pattern="\d*" value="10" style="font-family:monospace;;font-size:16px;text-align:right" size="4"> teeth</td>
+  </tr>
+  <tr>
+   <td style="text-align:right">Maximum:</td>
+   <td><input id="maxw" pattern="\d*" value="100" style="font-family:monospace;;font-size:16px;text-align:right" size="4"> teeth</td>
+  </tr>
+  <tr>
+   <td style="text-align:right"><span id="acc1">Accuracy:</span></td>
+   <td><span id="acc2"><select id="tol" style="font-size:16px">
+    <option value="0" selected="">=</option>
+    <option value="5e-3">2</option>
+    <option value="5e-4">3</option>
+    <option value="5e-5">4</option>
+    <option value="5e-6">5</option>
+    <option value="5e-7">6</option>
+    <option value="5e-8">7</option>
+    <option value="5e-9">8</option>
+    <option value="5e-10">9</option>
+    <option value="5e-11">10</option>
+    <option value="5e-12">11</option>
+    <option value="5e-13">12</option>
+    <option value="5e-14">13</option>
+    <option value="5e-15">14</option>
+    <option value="5e-16">15</option>
+    <option value="0">=</option>
+    </select> digits</span></td>
+  </tr>
+  </tbody></table>
+ </fieldset>
+ <table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+  <td width="33%" style="text-align:center;vertical-align:bottom"><span id="busy" style="font-size: 36px; visibility: hidden;">🕐</span></td>
+  <td width="33%" style="text-align:center;vertical-align:bottom"><img src="./Gear Train Calculator_files/blank.png" width="48" height="16" title="Calculation time: 0.00" border="0" id="stat"><br><input type="button" id="calculate" style="font-size:16px" value="Calculate" title="begin calculation" onclick="calc()"></td>
+  <td width="33%" style="text-align:center;vertical-align:bottom"><span id="stopa" style="visibility: hidden;"><img src="./Gear Train Calculator_files/stop.png" width="32" height="32" alt="stop" title="Click this to interrupt." onclick="stop()"></span></td>
+  </tr></tbody></table>
+ </center></td></tr>
+<tr>
+  <td><center><span id="result_text">Compound Result</span></center>
+   <table border="0" cellpadding="0" cellspacing="0" width="100%">
+   <tbody><tr><td style="vertical-align:top"><span id="result"><b>10:40,10:25</b><br>Teeth: 85</span></td><td><br><br><br><br><br><br></td></tr>
+   </tbody></table></td>
+</tr>
+<tr><td>
+   <table border="0" cellpadding="0" cellspacing="0">
+   <tbody><tr>
+ <td><span id="dev"></span>&nbsp;</td><td><br><br></td>
+ </tr>
+ </tbody></table>
+ </td>
+</tr>
+<tr><td style="background-color:#e0e0e0">Show deviation in terms of:<br>
+Percentage — digits:<select id="select3" onchange="sd()">
+ <option>0</option>
+ <option selected="">1</option>
+ <option>2</option>
+ <option>3</option>
+ <option>4</option>
+ <option>5</option>
+ <option>6</option>
+</select>
+<table border="1" cellpadding="3" cellspacing="0" bordercolor="#a0a0a0" bgcolor="#efefef" width="100%"><tbody><tr><td>Scale Proportions<br>
+<center>
+<input size="5" id="e1" pattern="\d*" value="1" onkeyup="sd()"><select id="select1" onchange="sd()">
+ <option value="0" selected="">second</option>
+ <option value="1">minute</option>
+ <option value="2">hour</option>
+ <option value="3">day</option>
+ <option value="4">week</option>
+ <option value="5">month</option>
+ <option value="6">year</option>
+</select>&nbsp;in&nbsp;<input size="5" id="e2" pattern="\d*" value="" onkeyup="sd()"><select id="select2" onchange="sd()">
+ <option value="0" selected="">second</option>
+ <option value="1">minute</option>
+ <option value="2">hour</option>
+ <option value="3">day</option>
+ <option value="4">week</option>
+ <option value="5">month</option>
+ <option value="6">year</option>
+</select></center></td></tr>
+</tbody></table>
+<br><center>
+<span style="font-size:7pt">Copyright © 2015 S.K. Consultants — All rights reserved</span></center></td></tr></tbody></table>
+<center><p>Please leave comments on <a href="https://web.archive.org/web/20190406140243/http://scientific601.lefora.com/topic/5/Compound-Gear-Train-Calculators">forum</a>.</p></center>
+<p style="text-align:right;font-size:8pt">Revised 18 Apr 2015</p>
+<script type="text/javascript" src="./Gear Train Calculator_files/gear.js.download" defer=""></script>
+</form>
+<!--
+playback timings (ms):
+  captures_list: 134.698
+  exclusion.robots: 0.245
+  exclusion.robots.policy: 0.237
+  RedisCDXSource: 1.069
+  esindex: 0.009
+  LoadShardBlock: 109.384 (3)
+  PetaboxLoader3.datanode: 98.766 (4)
+  CDXLines.iter: 21.261 (3)
+  load_resource: 86.542
+  PetaboxLoader3.resolve: 29.095
+--></body></html>

@@ -1,0 +1,543 @@
+var _____WB$wombat$assign$function_____ = function(name) {return (self._wb_wombat && self._wb_wombat.local_init && self._wb_wombat.local_init(name)) || self[name]; };
+if (!self.__WB_pmw) { self.__WB_pmw = function(obj) { this.__WB_source = obj; return this; } }
+{
+  let window = _____WB$wombat$assign$function_____("window");
+  let self = _____WB$wombat$assign$function_____("self");
+  let document = _____WB$wombat$assign$function_____("document");
+  let location = _____WB$wombat$assign$function_____("location");
+  let top = _____WB$wombat$assign$function_____("top");
+  let parent = _____WB$wombat$assign$function_____("parent");
+  let frames = _____WB$wombat$assign$function_____("frames");
+  let opener = _____WB$wombat$assign$function_____("opener");
+
+//	Copyright (C) 2020 S.K. Consultants - All Rights Reserved
+//	Jul 2, 2020
+"use strict"
+//	This is an NP-complete problem. Therefore no great quickie algorithm exists. I can only try some optimizations to
+//	achieve the computations within a serviceable timespan.
+
+//	DOM I/O
+var _ratio, _exp_err, _tol, _stages, _pawl, _adddiv, _tally, _minw, _maxw, _stat
+var _result, _calculate, _busy, _result_text, _dev, _select1, _select2, _select3, _e1, _e2, _field, _stopa
+var _backg, _title, _rat, _acc1, _acc2
+
+var init_err = 10000000, goal_time = 300	//	these should be 'const' but that's not always supported
+var mint = 3, maxt = 400
+var a, minc, maxc, sum, savea, ers, olderr, mode = 1	//	0 =running, 1=stopped, -1=interrupted
+var wheels, save_sum, interval, start, time, old_time
+var ratio, tol, stages, stagesp, minw, maxw, progress_range, decdig
+var timerID, cc, la, fmin, fmax, save_wheels, fr, rc, rata
+
+//********************************************************************************************************************************************
+
+function sd() {	//	triggered (select 'change', text 'keyup'), caller (calcr ↓, sr ↓)
+//	show deviation
+var units_name = ["second", "minute", "hour", "day", "week", "month", "year"]
+var units_val  = [1, 60, 3600, 86400, 604800, 2629800, 31557600]
+var factor, e1, select1, e2, select2, a
+
+a = _e1.value.replace(/,/g,'')
+e1 = +(!isNaN(a) && a)
+a = _e2.value.replace(/,/g,'')
+e2 = +(!isNaN(a) && a)
+
+select1 = units_val[_select1.value]
+select2 = units_val[_select2.value]
+
+if (!e1)
+	factor = e2 * select2 / select1
+else {
+	_e2.value = ""
+	factor = select2 / (e1 * select1)
+	}
+
+_dev.innerHTML = ""
+if (!olderr || olderr == init_err)
+	return
+
+var a = olderr * 100 / ratio
+_dev.innerHTML += "Deviation: " + a.toFixed(_select3.value) + "%"
+
+a = e1 ? e1 : Math.round(olderr / ratio * factor)
+
+_dev.innerHTML += "<br>" + a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
+if (select1 != select2) {
+	_dev.innerHTML += " " + units_name[_select1.value]
+	if (a != 1)
+		_dev.innerHTML += "s"
+	}
+if (!e1) {
+	if (select1 == select2) {
+		_dev.innerHTML += " part"
+		if (a != 1)
+			_dev.innerHTML += "s"
+		}
+	a = e2
+	_dev.innerHTML += " per"
+	if (a != 1 || select1 == select2)
+		_dev.innerHTML += " " + a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+	}
+else {
+	a = Math.round(ratio / olderr / factor)
+	_dev.innerHTML += " in " + a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+	}
+if (select1 != select2) {
+	_dev.innerHTML += " " + units_name[_select2.value]
+	if (a != 1)
+		_dev.innerHTML += "s"
+	}
+}
+
+//********************************************************************************************************************************************
+
+function fac(n) {	//	caller (calcc ↓)
+//	find largest prime factor
+if (n < 2) return 0
+
+while ((n & 1) == 0)
+	n /= 2
+
+if (n == 1)
+	return 2
+
+var oldn = n
+var maxd = Math.floor(Math.sqrt(n))
+for (var d = 3; d <= maxd; d += 2) {
+	while (0 == n % d)
+		n /= d
+	if (n != oldn) {
+		if (n == 1)
+			return d
+		maxd = Math.floor(Math.sqrt(n))
+		oldn = n
+		}
+	}
+return n
+}
+
+//********************************************************************************************************************************************
+
+function pk(n, s, su, norm) {	//	caller (pk =, sg ↓)
+//	pack
+//	Copyright (C) 2015 S.K. Consultants - All Rights Reserved
+//	bin packing optimum / balanced - find gears with smallest wheels
+if (s == 1) {
+	if (su + n < sum) {
+		sum = su + n
+		wheels[0] = n
+		save_wheels = wheels.slice(0)
+		}
+	return
+	}
+var l = (s == 2) ? Math.ceil(Math.sqrt(n)) : Math.max(Math.ceil(n / fmax[s]), minw)
+for (var t = Math.min(Math.floor(n / fmin[s]), maxw); t >= l; t--) {
+	if (!(n % t)) {
+		wheels[s - 1] = t
+		pk(n / t, s - 1, su + (norm ? t : 0), 1)
+		}
+	}
+}
+
+//********************************************************************************************************************************************
+
+function sg() {	//	caller (sr ↓)
+//	show gears
+wheels = []
+sum = maxw * stages + 1
+pk(savea, stagesp, 0, 1)
+var save_wheelsa = save_wheels.slice(0)
+save_sum = sum
+
+wheels = []
+sum = maxw * stages + 1
+pk(Math.round(savea * ratio), stages, 0, !_pawl.checked || _tally.checked)
+save_sum += sum
+
+var res = (_pawl.checked) ? "R" + save_wheels[save_wheels.length - 1] + "," : ""
+for (var i = stagesp - 1; i >= 0; i-- && (res += ","))
+	res += rc ? save_wheels[i] + ":" + save_wheelsa[i] : save_wheelsa[i] + ":" + save_wheels[i]
+
+return res
+}
+
+//********************************************************************************************************************************************
+
+function tm(m) {	//	caller (calcc ↓, dp ↓, stop ↓)
+//	task mode set 0=running, 1=stopped, -1=interrupted
+var b = (mode = m) & 1
+if (b)
+	clearInterval(timerID)
+_calculate.disabled = _field.disabled = !b
+_calculate.title = b ? "begin calculation" : "\u2026 busy right now"
+if (0 > m) {
+	result_text.innerHTML = '<span style="color:red">Calculation was INTERRUPTED!</span>'
+	if (olderr == init_err)
+		_result.innerHTML = ""	//	clear out "please wait"
+	}
+else m && (result_text.innerHTML = "Compound Result")
+_busy.style.visibility = _stopa.style.visibility = b ? "hidden" : "visible"
+}
+
+//********************************************************************************************************************************************
+
+function se() {	//	caller (calcr ↓, sr ↓)
+//	show error
+_result.innerHTML += "<br>Teeth: " + save_sum
+if (stages && _pawl.checked)
+	_result.innerHTML += _tally.checked ? " total" : " excluding ratchet"
+if (!olderr)
+	return
+var oerr = Math.abs(ers - rata)
+_result.innerHTML += "<br>Error: " + (ers > rata ? "+" : "-") + oerr.toFixed(decdig) + "<br>"
+_result.innerHTML += rata.toFixed(decdig) + " &larr;target<br>" + ers.toFixed(decdig) + " &larr;gears<br>"
+_result.innerHTML += "Accurate to " + Math.floor(Math.log(oerr * 2) / - Math.LN10) + " decimal digits."
+}
+
+//********************************************************************************************************************************************
+
+function sr() {	//	caller (dp ↓, srt ↓)
+//	show result
+if (olderr == init_err) {
+	_result.innerHTML = "NOT POSSIBLE"
+	return
+	}
+_result.innerHTML = "<b>" + sg() + "</b>"
+ers = Math.round(savea * ratio) / savea
+if (rc)
+	ers = 1 / ers
+se()
+sd()
+_stat.title = "Calculation time: " + (time / 1000).toFixed(2)
+}
+
+//********************************************************************************************************************************************
+
+function srt() {	//	triggered (checkbox 'change')
+//	show result (tally)
+stages != stagesp && sr()
+}
+
+//********************************************************************************************************************************************
+
+function stop() {	//	triggered (img 'click)
+//	user pressed "STOP"
+if (mode) {
+	alert("Nothing running.")
+	return
+	}
+if (!confirm("Taking too long! STOP program."))
+	return
+var now_time = new Date().getTime()
+time = now_time - start
+_stat.title = "Calculation time: " + (time / 1000).toFixed(2)
+tm(-1)
+}
+
+//********************************************************************************************************************************************
+
+function up() {	//	caller (dp ↓)
+//	update progress bar
+if (++cc & 3)
+	return
+_busy.innerHTML = "&#" + ((cc >> 2) % 12 + 128336) + ";"
+var t = Math.round((a - minc) / progress_range * 100)
+if (la == t)
+	return
+la = t
+_result_text.innerHTML = "Intermediate Result &nbsp; " + t + "&#37;"
+}
+
+//********************************************************************************************************************************************
+
+function pkbo(n, s) {	//	caller (pkb ↓, pkbo =)
+//	packable check
+//	Copyright (C) 2015 S.K. Consultants - All Rights Reserved
+//	recursive off-line bin packing - check if there are ANY ways to pack
+if (1 == s)
+	return n <= maxw && n >= minw
+var l = Math.max(Math.floor(Math.pow(n, 1 / s)), minw)	//	should be ceil but roundoff error may miss perfect roots
+var t = Math.min(maxw, Math.floor(n / fmin[s]))
+for (t & 1 || t--; t >= l; t -= 2) {
+	if (!(n % t) && pkbo(n / t, s - 1))
+		return 1
+	}
+return 0
+}
+
+//********************************************************************************************************************************************
+
+function pkb(n, s) {	//	caller (dp ↓, pkb =)
+//	packable check
+//	Copyright (C) 2015 S.K. Consultants - All Rights Reserved
+//	recursive off-line bin packing - check if there are ANY ways to pack
+if (n & 1)
+	return pkbo(n, s)
+if (1 == s)
+	return n <= maxw && n >= minw
+var l = Math.max(Math.floor(Math.pow(n, 1 / s)), minw)	//	should be ceil but roundoff error may miss perfect roots
+var t = Math.min(maxw, Math.floor(n / fmin[s])) + 1
+while (--t >= l) {
+	if (!(n % t) && pkb(n / t, s - 1))
+		return 1
+	}
+return 0
+}
+
+//********************************************************************************************************************************************
+
+function dp() {	//	callback (setInterval)
+//	do part
+var b, err, now_time, factor, savea1 = savea, olderr1 = olderr, a1 = a, abs = Math.abs
+var stages1 = stages, stagesp1 = stagesp, tol1 = tol
+var chunk = Math.min(a1-- + interval, maxc)
+var round = fr > chunk ? function(a) {return a + 0.5 >> 0} : Math.round
+while (++a1 < chunk) {
+	b = round(a1 * ratio)
+	if (olderr1 > (err = abs(ratio - b / a1))) {
+		if (!pkb(b, stages1))
+			continue
+		if (!pkb(a1, stagesp1))
+			continue
+		savea1 = a1
+		if (tol1 >= (olderr1 = err))
+			break
+		}
+	}
+a = a1
+olderr = olderr1
+
+now_time = new Date().getTime()
+if (olderr1 > tol && chunk < maxc) {	//	more to do so let interval timer trigger next chunk
+	factor = goal_time / (now_time - old_time)
+	if (factor < 0.7 || factor > 1.4) {
+		factor = Math.min(Math.max(factor, 0.5), 2.0)
+		interval = Math.max(Math.round(interval * factor), 1000)
+		}
+	old_time = now_time
+	up()
+	if (savea != savea1) {
+		savea = savea1
+		time = now_time - start
+		sr()
+		}
+	return
+	}
+
+time = now_time - start
+tm(1)
+savea = savea1
+sr()
+}
+
+//********************************************************************************************************************************************
+
+function gsf() { 	//	caller (calcc ↓)
+//	generate stage factors
+fmin = [1, 1]	//	preload with extra element so that later indexing does need an offset
+fmax = [1, 1]
+for (var i = 1, k = 1, h = 1; i < stages; i++) {
+	fmin.push(k *= minw)
+	fmax.push(h *= maxw)
+	}
+}
+
+//********************************************************************************************************************************************
+
+function calcc() {	//	caller (calc ↓)
+//	setup
+tol = +_tol.value
+stages += _pawl.checked
+if (rc = ratio < 1)
+	ratio = 1 / ratio
+
+if ((ratio | 0) === ratio && maxw < fac(ratio)) {
+	_result.innerHTML = "Ratio is not divisible<br>by any gear size."
+	return
+	}
+
+maxc = Math.round(Math.pow(maxw, stages) / ratio) + 1
+var maxc2 = Math.floor(Math.pow(maxw, stagesp)) + 1
+
+if (maxc2 < maxc)
+	maxc = maxc2
+
+olderr = init_err
+savea = 0
+
+a = minc = Math.round(Math.pow(minw, stagesp))
+
+interval = 1000
+
+gsf()
+
+progress_range = Math.max(maxc - minc, 1)
+
+_result.innerHTML = "please wait\u2026"	//	clear out any previous stuff
+_dev.innerHTML = ""
+tm(0)
+cc = la = -1
+timerID = setInterval(dp, 0)
+fr = (2147483647 / ratio) >> 0
+old_time = start = new Date().getTime()
+}
+
+//********************************************************************************************************************************************
+
+function calcr() {	//	caller (calc ↓)
+//	Copyright (C) 2015 S.K. Consultants - All Rights Reserved
+//	Reverted gear train has its first and third wheel share a common axle, although rotating independently
+//	while the second compound gear idler is on a separate axis.
+//	Calculate wheel sizes in a 2-stage train a, b, c, d for a given reduction ratio R such that
+//	(b / a) * (d / c) = R and collinear axle is maintained by a + b = c + d
+var a, b, c, d, err, tot
+var savea = 0, saveb = 0, savec = 0, saved = 0
+save_sum = maxt * 2
+olderr = init_err
+
+//	search all gear sizes for a, b
+for (a = minw; a <= maxw; a++) {
+	if (minw > Math.round((a + maxw) / (ratio * a / maxw + 1))) break	//	early out gear b can never be big enough
+	for (b = minw; b <= maxw; b++) {
+		c = Math.round((a + b) / (ratio * a / b + 1))	//	infer gear c
+		if (c > maxw) break		//	early out gear c is already too big
+		if (c < minw) continue
+		d = a + b - c									//	infer gear d
+		if (d < minw) break		//	early out gear d is already too small
+		if (d > maxw) continue
+		err = Math.abs((b * d) / (a * c) - ratio)		//	check accuracy
+		if (err > olderr) continue
+		tot = a + b
+		if (err < olderr || tot < save_sum) {
+			olderr = err
+			save_sum = tot
+			savea = a
+			saveb = b
+			savec = c
+			saved = d
+			}
+		}
+	}
+_result_text.innerHTML = "Reverted Result"
+_result.innerHTML = ""
+_dev.innerHTML = ""
+
+if (olderr == init_err) {
+	_result.innerHTML = "NOT POSSIBLE"
+	return
+	}
+if (Math.max(saveb, savec) < Math.max(savea, saved))	//	ensure idler has smaller wheel
+	_result.innerHTML = "<b>" + savea + ":" + saveb + "," + savec + ":" + saved + "</b>"
+else
+	_result.innerHTML = "<b>" + savec + ":" + saved + "," + savea + ":" + saveb + "</b>"
+ers = (saveb * saved) / (savea * savec)
+save_sum <<= 1
+se()
+sd()
+}
+
+//********************************************************************************************************************************************
+
+function ta() {	//	triggered (checkbox 'change')
+//	toggle add checkbox
+_adddiv.style.visibility = _pawl.checked ? "visible" : "hidden"
+}
+
+//********************************************************************************************************************************************
+
+//	we are going to allow user to enter an expression using more conventional math functions rather than JavaScript
+//	convert to JavaScript safely
+
+function func() {	//	caller (calc ↓)
+var from = ["acos", "asin", "atan", "cos", "exp", "log", "pi", "pow", "sin", "sqrt", "tan"]
+var ratio, err
+
+//	extract all potential math function names and compare with above list of allowable fns
+var rat = _ratio.value.toLowerCase()
+var words = rat.split(/[^a-zA-Z]+/)
+for (var i = 0; i < words.length; i++) {
+	if ("" == words[i]) continue	//	splitter puts trailing empty string
+	if (from.indexOf(words[i]) < 0) {
+		//_result_text.innerHTML = "unrecognized \"" + words[i] + "\""
+		return -1
+		}
+	}
+//	convert math functions to JavaScript syntax
+for (i = 0; i < from.length; i++)
+	rat = rat.replace(new RegExp(from[i], 'g'), "Math." + ((from[i] == "pi") ? "PI" : from[i]))
+rat = rat.replace(new RegExp("Math.aMath.", 'g'), "Math.a")	//	fix any doubly converted functions e.g. acos -> Math.aMath.cos
+rat = rat.replace(/:/g, "/")	//	allow ":" (ratio) like divide
+try { ratio = eval(rat) }
+catch (err)	{		//	syntax problem
+	return -1
+	}
+if (isNaN(ratio))	//	legal JavasScript but doesn't evaluate to simple number
+	return -1
+ratio = Number(ratio)	//	in case it's a boolean type convert to 0 or 1
+if (ratio < 0 || !isFinite(ratio))
+	ratio = 0	//	ratio must be positive, not be infinity (from division by zero)
+return ratio
+}
+
+//********************************************************************************************************************************************
+
+function calc() {	//	triggered (button 'click')
+_stat.title = ""
+rata = ratio = func()
+if (0 > ratio) {
+	_result_text.innerHTML = "Expression is faulty."
+	_dev.innerHTML = _result.innerHTML = ""
+	return
+	}
+decdig = Math.max(16 - Math.floor(ratio).toString().length, 0)
+_minw.value = minw = Math.min(Math.max(+(!isNaN(_minw.value) && _minw.value), mint), maxt - 1)
+_maxw.value = maxw = Math.min(Math.max(+(!isNaN(_maxw.value) && _maxw.value), minw + 1), maxt)
+;(stagesp = stages = +_stages.value) ? calcc() : calcr()
+}
+
+//********************************************************************************************************************************************
+
+function typ() {	//	triggered (select 'change')
+var b = +_stages.value
+_backg.style.backgroundColor = b ? "#e0e0ff" : "#ffe0e0"
+_title.innerHTML = b ? "Compound" : "Reverted"
+_rat.style.visibility = _acc1.style.visibility = _acc2.style.visibility = b ? "visible" : "hidden"
+_adddiv.style.visibility = b && _pawl.checked ? "visible" : "hidden"
+}
+
+//********************************************************************************************************************************************
+
+window.onload = function() {	//	triggered
+//	set up DOM I/O
+var all = document.getElementsByTagName("*")
+for (var i = all.length - 1; i >= 0; i--) {
+	if (all[i].id) {
+		eval("_" + all[i].id + "=document.getElementById('" + all[i].id + "')")
+		}
+	}
+_stages.value = window.top.location.hash.indexOf("#") ? "2" : "0"
+typ()
+}
+
+}
+/*
+     FILE ARCHIVED ON 23:06:04 Feb 04, 2021 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 10:55:26 Feb 10, 2021.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+*/
+/*
+playback timings (ms):
+  captures_list: 315.043
+  exclusion.robots: 0.144
+  exclusion.robots.policy: 0.133
+  RedisCDXSource: 16.712
+  esindex: 0.008
+  LoadShardBlock: 276.181 (3)
+  PetaboxLoader3.datanode: 185.785 (4)
+  CDXLines.iter: 19.662 (3)
+  load_resource: 73.77
+  PetaboxLoader3.resolve: 30.781
+*/
